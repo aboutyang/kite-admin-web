@@ -12,6 +12,44 @@ export function loadMenu(req, res) {
         path: '/dashboard/monitor',
       },
       {
+        name: '系统管理',
+        path: '/sys',
+        children: [
+          {
+            name: '管理员管理',
+            path: '/sys/user',
+          },
+          // {
+          //   name: '部门管理',
+          //   path: '/sys/dept',
+          // },
+          // {
+          //   name: '角色管理',
+          //   path: '/sys/role',
+          // },
+          // {
+          //   name: '菜单管理',
+          //   path: '/sys/menu',
+          // },
+          // {
+          //   name: 'SQL监控',
+          //   path: '/druid/sql',
+          // },
+          // {
+          //   name: '参数管理',
+          //   path: '/sys/config',
+          // },
+          // {
+          //   name: '字典管理',
+          //   path: '/sys/dict',
+          // },
+          // {
+          //   name: '系统日志',
+          //   path: '/sys/log',
+          // },
+        ],
+      },
+      {
         name: '表单页',
         path: '/form',
         children: [

@@ -1,4 +1,5 @@
 import { routerRedux } from 'dva/router';
+import { message } from 'antd';
 import { stringify } from 'qs';
 import { fakeAccountLogin } from '../services/api';
 import { setAuthority, setToken, clearToken } from '../utils/authority';
@@ -38,6 +39,8 @@ export default {
           }
         }
         yield put(routerRedux.replace(redirect || '/'));
+      } else {
+        message.error(response.msg);
       }
     },
     *logout(_, { put }) {

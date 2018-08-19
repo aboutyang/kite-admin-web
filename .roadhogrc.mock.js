@@ -7,8 +7,10 @@ import { getProfileAdvancedData } from './mock/profile';
 import { getNotices } from './mock/notices';
 import { format, delay } from 'roadhog-api-doc';
 
-import { login, logout } from './mock/common'
+import { login, logout } from './mock/common';
 import { loadMenu } from './mock/menu';
+import { querySysUser, removeSysUser, addSysUser } from './mock/sysUser';
+import { selectDept } from './mock/dept';
 
 // 是否禁用代理
 const noProxy = process.env.NO_PROXY === 'true';
@@ -53,6 +55,10 @@ const proxy = {
     },
   ],
   'GET /api/sys/menu/nav': loadMenu,
+  'GET /api/sys/user/list': querySysUser,
+  'DELETE /api/sys/user/delete': removeSysUser,
+  'POST /api/sys/user/save': addSysUser,
+  'GET /api/sys/dept/select': selectDept,
   'GET /api/project/notice': getNotice,
   'GET /api/activities': getActivities,
   'GET /api/rule': getRule,
@@ -75,9 +81,11 @@ const proxy = {
   'GET /api/fake_chart_data': getFakeChartData,
   'GET /api/profile/basic': getProfileBasicData,
   'GET /api/profile/advanced': getProfileAdvancedData,
-  'POST /api/login/account': login,
+  'POST /api/login/account': (req, res) => {
+    res.send({ code: 0, currentAuthority: 'user', type: 'account', token: '123456' });
+  },
   'POST /api/register': (req, res) => {
-    res.send({ status: 'ok', currentAuthority: 'user' });
+    res.send({ code: 0, currentAuthority: 'user' });
   },
   'GET /api/notices': getNotices,
   'GET /api/500': (req, res) => {

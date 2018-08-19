@@ -88,6 +88,11 @@ export const getRouterData = app => {
     '/dashboard/analysis': {
       component: dynamicWrapper(app, ['chart'], () => import('../routes/Dashboard/Analysis')),
     },
+    '/sys/user': {
+      component: dynamicWrapper(app, ['sysUser', 'dept'], () =>
+        import('../routes/Sys/User/SysUserPage')
+      ),
+    },
     '/form/basic-form': {
       component: dynamicWrapper(app, ['form'], () => import('../routes/Forms/BasicForm')),
     },

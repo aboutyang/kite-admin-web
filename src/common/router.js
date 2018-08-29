@@ -74,6 +74,17 @@ export const getRouterData = app => {
     '/': {
       component: dynamicWrapper(app, ['user', 'login'], () => import('../layouts/BasicLayout')),
     },
+    '/sys/user': {
+      component: dynamicWrapper(app, ['sysUser', 'dept'], () =>
+        import('../routes/Sys/User/SysUserPage')
+      ),
+    },
+    '/sys/dept': {
+      component: dynamicWrapper(app, ['dept'], () => import('../routes/Sys/Dept/SysDeptPage')),
+    },
+    '/sys/menu': {
+      component: dynamicWrapper(app, ['menu'], () => import('../routes/Sys/Menu/SysMenuPage')),
+    },
     '/dashboard/workplace': {
       component: dynamicWrapper(app, ['project', 'activities', 'chart'], () =>
         import('../routes/Dashboard/Workplace')
@@ -87,11 +98,6 @@ export const getRouterData = app => {
     },
     '/dashboard/analysis': {
       component: dynamicWrapper(app, ['chart'], () => import('../routes/Dashboard/Analysis')),
-    },
-    '/sys/user': {
-      component: dynamicWrapper(app, ['sysUser', 'dept'], () =>
-        import('../routes/Sys/User/SysUserPage')
-      ),
     },
     '/form/basic-form': {
       component: dynamicWrapper(app, ['form'], () => import('../routes/Forms/BasicForm')),

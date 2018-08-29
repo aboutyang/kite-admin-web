@@ -48,9 +48,9 @@ export default function request(url, options) {
     credentials: 'include',
   };
   // append jwt token
-  if(getToken()){
+  if (getToken()) {
     defaultOptions.headers = {
-      Authorization:  `Bearer ${getToken()}`,
+      token: `${getToken()}`,
       ...defaultOptions.headers,
     };
   }

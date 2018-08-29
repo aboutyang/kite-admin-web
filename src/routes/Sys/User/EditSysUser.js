@@ -19,20 +19,26 @@ class EditSysUser extends PureComponent {
   }
 
   okHandle = () => {
-    const { form, handleAdd } = this.props;
+    const { form, handleAdd, isUpdate } = this.props;
     form.validateFields((err, fieldsValue) => {
       if (err) return;
-      handleAdd(fieldsValue, form);
+      handleAdd(
+        {
+          isUpdate,
+          ...fieldsValue,
+        },
+        form
+      );
     });
   };
 
   renderDept = deptList => {
     if (deptList && deptList.length > 0) {
       return deptList.map(dept => {
-        if (dept.list) {
+        if (dept.children) {
           return (
             <TreeNode value={`${dept.deptId}`} title={dept.name} key={dept.deptId}>
-              {this.renderDept(dept.list)}
+              {this.renderDept(dept.children)}
             </TreeNode>
           );
         } else {
@@ -83,7 +89,7 @@ class EditSysUser extends PureComponent {
         </FormItem>
         <FormItem labelCol={{ span: 5 }} wrapperCol={{ span: 15 }} label="所属部门">
           {form.getFieldDecorator('deptId', {
-            initialValue: isUpdate ? initObj.deptName : '',
+            initialValue: isUpdate ? initObj.deptId : '',
             rules: [{ required: true, message: '所属部门不能为空' }],
           })(
             <TreeSelect
@@ -102,9 +108,7 @@ class EditSysUser extends PureComponent {
           if (!isUpdate) {
             return (
               <FormItem labelCol={{ span: 5 }} wrapperCol={{ span: 15 }} label="密码">
-                {form.getFieldDecorator('password', {
-                  rules: [{ required: true, message: '密码不能为空' }],
-                })(<Input placeholder="密码" />)}
+                {form.getFieldDecorator('password', {})(<Input placeholder="密码" />)}
               </FormItem>
             );
           }

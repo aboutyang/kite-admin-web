@@ -1,7 +1,22 @@
 import React, { PureComponent, Fragment } from 'react';
 import { connect } from 'dva';
 import moment from 'moment';
-import { Card, Icon, Button, Dropdown, Menu, message, Divider } from 'antd';
+import {
+  Card,
+  Icon,
+  Button,
+  Dropdown,
+  Menu,
+  message,
+  Divider,
+  Popconfirm,
+  Modal,
+  Form,
+  Row,
+  Col,
+  Input,
+  Tag,
+} from 'antd';
 import StandardTable from 'components/StandardTable';
 import PageHeaderLayout from '../../../layouts/PageHeaderLayout';
 import EditSysUser from './EditSysUser';
@@ -17,6 +32,7 @@ const getValue = obj =>
   sysUser,
   loading: loading.models.sysUser,
 }))
+@Form.create()
 export default class SysUserPage extends PureComponent {
   state = {
     modalVisible: false,
@@ -42,8 +58,8 @@ export default class SysUserPage extends PureComponent {
     }, {});
 
     const params = {
-      currentPage: pagination.current,
-      pageSize: pagination.pageSize,
+      page: pagination.current,
+      limit: pagination.pageSize,
       ...formValues,
       ...filters,
     };
@@ -53,7 +69,7 @@ export default class SysUserPage extends PureComponent {
 
     dispatch({
       type: 'sysUser/fetch',
-      payload: params,
+      params,
     });
   };
 
@@ -65,37 +81,103 @@ export default class SysUserPage extends PureComponent {
     });
     dispatch({
       type: 'sysUser/fetch',
-      payload: {},
     });
   };
 
-  handleMenuClick = e => {
+  showDeleteConfirm = () => {
     const { dispatch } = this.props;
     const { selectedRows } = this.state;
 
-    if (!selectedRows) return;
+    const research = this.handleReSearch;
 
-    switch (e.key) {
-      case 'remove':
+    Modal.confirm({
+      title: '删除用户',
+      content: '确定要删除选中的记录？',
+      okText: '确认',
+      okType: 'danger',
+      cancelText: '取消',
+      onOk() {
+        if (!selectedRows) return;
         dispatch({
           type: 'sysUser/remove',
-          payload: selectedRows.map(row => row.userId).join(','),
-        }).then(response => {
-          if (response) {
-            const rep = JSON.parse(response);
-            if (rep.code === 0) {
-              message.success(`删除用户【${selectedRows.map(row => row.username).join(',')}】成功`);
+          payload: selectedRows.map(row => row.userId),
+        })
+          .then(response => {
+            if (response) {
+              if (response.code === 0) {
+                message.success(
+                  `删除用户【${selectedRows.map(row => row.username).join(',')}】成功`
+                );
+                return true;
+              } else {
+                message.error(response.msg);
+              }
             } else {
-              message.error(rep.msg);
+              message.error('系统异常，请稍后重试！');
             }
+            return false;
+          })
+          .then(flag => {
+            if (flag) {
+              research();
+            }
+          });
+      },
+    });
+  };
+
+  generatorUserData = () => {
+    const { dispatch } = this.props;
+    dispatch({
+      type: 'sysUser/generator',
+    })
+      .then(response => {
+        if (response) {
+          if (response.code === 0) {
+            message.success(`测试数据生成成功！`);
+            return true;
           } else {
-            message.error('系统异常，请稍后重试！');
+            message.error(response.msg);
           }
-        });
-        break;
-      default:
-        break;
-    }
+        } else {
+          message.error('系统异常，请稍后重试！');
+        }
+        return false;
+      })
+      .then(flag => {
+        if (flag) {
+          this.handleReSearch();
+        }
+      });
+  };
+
+  changeStatus = status => {
+    const { dispatch } = this.props;
+    const { selectedRows } = this.state;
+
+    dispatch({
+      type: 'sysUser/changeStatus',
+      userIds: selectedRows.map(row => row.userId),
+      status,
+    })
+      .then(response => {
+        if (response) {
+          if (response.code === 0) {
+            message.success(`操作成功!`);
+            return true;
+          } else {
+            message.error(response.msg);
+          }
+        } else {
+          message.error('系统异常，请稍后重试！');
+        }
+        return false;
+      })
+      .then(flag => {
+        if (flag) {
+          this.handleReSearch();
+        }
+      });
   };
 
   handleSelectRows = rows => {
@@ -116,25 +198,27 @@ export default class SysUserPage extends PureComponent {
       e.preventDefault();
     }
 
-    const { dispatch } = this.props;
-    // const { dispatch, form } = this.props;
+    const { dispatch, form } = this.props;
+
+    form.validateFields((err, fieldsValue) => {
+      if (err) return;
+
+      dispatch({
+        type: 'sysUser/fetch',
+        params: fieldsValue,
+      });
+    });
+  };
+
+  handleReSearch = () => {
+    const {
+      dispatch,
+      sysUser: { lastQuery },
+    } = this.props;
     dispatch({
       type: 'sysUser/fetch',
-      payload: {},
+      params: lastQuery,
     });
-
-    // form.validateFields((err, fieldsValue) => {
-    //   if (err) return;
-
-    //   this.setState({
-    //     formValues: fieldsValue,
-    //   });
-
-    //   dispatch({
-    //     type: 'sysUser/fetch',
-    //     payload: fieldsValue,
-    //   });
-    // });
   };
 
   handleAdd = (fields, form) => {
@@ -145,19 +229,27 @@ export default class SysUserPage extends PureComponent {
         ...fields,
       },
     })
-      .then(() => {
-        message.success(`添加用户【${fields.username}】成功`);
-        form.resetFields();
-        this.setState({
-          modalVisible: false,
-        });
+      .then(response => {
+        if (response.code === 0) {
+          if (fields.isUpdate) {
+            message.success(`更新用户【${fields.username}】成功`);
+          } else {
+            message.success(`添加用户【${fields.username}】成功`);
+          }
+          form.resetFields();
+          this.setState({
+            modalVisible: false,
+          });
+        } else {
+          message.error(response.msg);
+        }
       })
       .then(() => {
-        this.handleSearch();
+        this.handleReSearch();
       });
   };
 
-  handleUpdate = record => {
+  showUpdateForm = record => {
     this.setState({
       modalVisible: true,
       isUpdate: true,
@@ -171,20 +263,44 @@ export default class SysUserPage extends PureComponent {
     const { dispatch } = this.props;
     dispatch({
       type: 'sysUser/remove',
-      payload: record.userId,
-    }).then(response => {
-      if (response) {
-        const rep = JSON.parse(response);
-        if (rep.code === 0) {
-          message.success(`删除用户【${record.username}】成功`);
+      payload: [record.userId],
+    })
+      .then(response => {
+        if (response) {
+          if (response.code === 0) {
+            message.success(`删除用户【${record.username}】成功`);
+          } else {
+            message.error(response.msg);
+          }
         } else {
-          message.error(rep.msg);
+          message.error('系统异常，请稍后重试！');
         }
-      } else {
-        message.error('系统异常，请稍后重试！');
-      }
-    });
+      })
+      .then(() => {
+        this.handleReSearch();
+      });
   };
+
+  renderSimpleForm() {
+    const { form } = this.props;
+    const { getFieldDecorator } = form;
+    return (
+      <Form onSubmit={this.handleSearch} layout="inline">
+        <Row gutter={{ md: 8, lg: 24, xl: 48 }}>
+          <Col md={8} sm={24}>
+            {getFieldDecorator('username')(<Input placeholder="用户名" />)}
+          </Col>
+          <Col md={8} sm={24}>
+            <span className={styles.submitButtons}>
+              <Button type="primary" htmlType="submit">
+                查询
+              </Button>
+            </span>
+          </Col>
+        </Row>
+      </Form>
+    );
+  }
 
   render() {
     const {
@@ -192,6 +308,15 @@ export default class SysUserPage extends PureComponent {
       loading,
     } = this.props;
     const { selectedRows, modalVisible, isUpdate, initObj } = this.state;
+
+    const data = {
+      ...page,
+      pagination: {
+        total: page.totalCount,
+        pageSize: page.pageSize,
+        current: page.currPage,
+      },
+    };
 
     const columns = [
       {
@@ -217,6 +342,13 @@ export default class SysUserPage extends PureComponent {
       {
         title: '状态',
         dataIndex: 'status',
+        render(val) {
+          if (val === 1) {
+            return <Tag color="green">启用</Tag>;
+          } else {
+            return <Tag color="red">禁用</Tag>;
+          }
+        },
       },
       {
         title: '创建时间',
@@ -229,9 +361,17 @@ export default class SysUserPage extends PureComponent {
         render: record => {
           return (
             <Fragment>
-              <a onClick={() => this.handleUpdate(record)}>更新</a>
+              <a onClick={() => this.showUpdateForm(record)}>更新</a>
               <Divider type="vertical" />
-              <a onClick={() => this.handleDelete(record)}>刪除</a>
+              <Popconfirm
+                title="确定要删除选中的记录？"
+                onConfirm={() => this.handleDelete(record)}
+                okText="确定"
+                cancelText="取消"
+              >
+                <a>刪除</a>
+              </Popconfirm>
+              ,
             </Fragment>
           );
         },
@@ -239,10 +379,19 @@ export default class SysUserPage extends PureComponent {
     ];
 
     const menu = (
-      <Menu onClick={this.handleMenuClick} selectedKeys={[]}>
-        <Menu.Item key="remove">删除</Menu.Item>
-        <Menu.Item key="enable">禁用</Menu.Item>
-        <Menu.Item key="disable">启用</Menu.Item>
+      <Menu>
+        <Menu.Item key="remove" onClick={this.showDeleteConfirm}>
+          <a>删除</a>
+        </Menu.Item>
+        <Menu.Item key="enable" onClick={() => this.changeStatus('lock')}>
+          禁用
+        </Menu.Item>
+        <Menu.Item key="disable" onClick={() => this.changeStatus('unlock')}>
+          启用
+        </Menu.Item>
+        <Menu.Item key="generatorUserData" onClick={this.generatorUserData}>
+          生成100条测试数据
+        </Menu.Item>
       </Menu>
     );
 
@@ -255,7 +404,7 @@ export default class SysUserPage extends PureComponent {
       <PageHeaderLayout title="管理员列表">
         <Card bordered={false}>
           <div className={styles.tableList}>
-            {/* <div className={styles.tableListForm}>{this.renderForm()}</div> */}
+            <div className={styles.tableListForm}>{this.renderSimpleForm()}</div>
             <div className={styles.tableListOperator}>
               <Button icon="plus" type="primary" onClick={() => this.handleModalVisible(true)}>
                 新建
@@ -274,7 +423,7 @@ export default class SysUserPage extends PureComponent {
               selectedRows={selectedRows}
               rowKey="userId"
               loading={loading}
-              data={page}
+              data={data}
               columns={columns}
               onSelectRow={this.handleSelectRows}
               onChange={this.handleStandardTableChange}

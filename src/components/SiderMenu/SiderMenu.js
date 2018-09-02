@@ -1,5 +1,5 @@
 import React, { PureComponent } from 'react';
-import { Layout, Menu, Icon } from 'antd';
+import { Layout, Menu } from 'antd';
 import pathToRegexp from 'path-to-regexp';
 import { Link } from 'dva/router';
 import styles from './index.less';
@@ -17,7 +17,8 @@ const getIcon = icon => {
     if (icon.indexOf('http') === 0) {
       return <img src={icon} alt="icon" className={`${styles.icon} sider-menu-item-img`} />;
     }
-    return <Icon type={icon} />;
+    // return <Icon type={icon} />;
+    return <i className={icon} />;
   }
 
   return icon;
@@ -80,9 +81,12 @@ export default class SiderMenu extends PureComponent {
     // Is it a http link
     if (/^https?:\/\//.test(itemPath)) {
       return (
-        <a href={itemPath} target={target}>
+        <a href={itemPath} target="view_window">
           {icon}
-          <span>{name}</span>
+          <span>
+            &nbsp;&nbsp;
+            {name}
+          </span>
         </a>
       );
     }
@@ -101,7 +105,10 @@ export default class SiderMenu extends PureComponent {
         }
       >
         {icon}
-        <span>{name}</span>
+        <span>
+          &nbsp;&nbsp;
+          {name}
+        </span>
       </Link>
     );
   };
@@ -120,7 +127,10 @@ export default class SiderMenu extends PureComponent {
               item.icon ? (
                 <span>
                   {getIcon(item.icon)}
-                  <span>{item.name}</span>
+                  <span>
+                    &nbsp;&nbsp;
+                    {item.name}
+                  </span>
                 </span>
               ) : (
                 item.name

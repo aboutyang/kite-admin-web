@@ -6,27 +6,47 @@ const RadioGroup = Radio.Group;
 const FormItem = Form.Item;
 const { TreeNode } = TreeSelect;
 
-@connect(({ dept, loading }) => ({
+@connect(({ dept, sysUser, role, loading }) => ({
   dept,
+  roleList: role.roleList,
+  roleIdList: sysUser.roleIdList,
   loading: loading.models.sysUser,
 }))
 class EditSysUser extends PureComponent {
+  // state = {
+  //   checkedRoleKeys: [],
+  //   roleChange: false,
+  // };
+
   componentDidMount() {
-    const { dispatch } = this.props;
+    const { dispatch, isUpdate, initObj } = this.props;
     dispatch({
       type: 'dept/selectDept',
+    });
+    dispatch({
+      type: 'role/selectRole',
+    }).then(() => {
+      if (isUpdate) {
+        dispatch({
+          type: 'sysUser/userInfo',
+          userId: initObj.userId,
+        });
+      }
     });
   }
 
   okHandle = () => {
-    const { form, handleAdd, isUpdate } = this.props;
+    const { form, handleAdd, isUpdate, dispatch } = this.props;
     form.validateFields((err, fieldsValue) => {
       if (err) return;
+      dispatch({
+        type: 'sysUser/clearRoleIdList',
+      });
       handleAdd(
         {
-          isUpdate,
           ...fieldsValue,
         },
+        isUpdate,
         form
       );
     });
@@ -50,6 +70,16 @@ class EditSysUser extends PureComponent {
     }
   };
 
+  renderRole = roleList => {
+    if (roleList && roleList.length > 0) {
+      return roleList.map(role => {
+        return <TreeNode value={`${role.roleId}`} title={role.roleName} key={role.roleId} />;
+      });
+    } else {
+      return <TreeNode value="0" title="请选择" key={0} />;
+    }
+  };
+
   render() {
     const {
       modalVisible,
@@ -58,6 +88,9 @@ class EditSysUser extends PureComponent {
       isUpdate,
       initObj,
       dept: { deptList },
+      roleList,
+      roleIdList,
+      dispatch,
       loading,
     } = this.props;
 
@@ -72,7 +105,12 @@ class EditSysUser extends PureComponent {
         visible={modalVisible}
         onOk={this.okHandle}
         confirmLoading={loading}
-        onCancel={() => handleModalVisible()}
+        onCancel={() => {
+          dispatch({
+            type: 'sysUser/clearRoleIdList',
+          });
+          handleModalVisible();
+        }}
       >
         {(() => {
           if (isUpdate) {
@@ -133,6 +171,22 @@ class EditSysUser extends PureComponent {
               <Radio value={1}>正常</Radio>
               <Radio value={0}>禁用</Radio>
             </RadioGroup>
+          )}
+        </FormItem>
+        <FormItem labelCol={{ span: 5 }} wrapperCol={{ span: 15 }} label="选择角色">
+          {form.getFieldDecorator('roleIdList', {
+            initialValue: isUpdate ? roleIdList : [],
+          })(
+            <TreeSelect
+              allowClear
+              showSearch
+              treeDefaultExpandAll
+              style={{ width: 300 }}
+              // treeCheckable={true}
+              key="roleId"
+            >
+              {this.renderRole(roleList)}
+            </TreeSelect>
           )}
         </FormItem>
       </Modal>

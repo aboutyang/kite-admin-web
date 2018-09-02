@@ -85,6 +85,9 @@ export const getRouterData = app => {
     '/sys/menu': {
       component: dynamicWrapper(app, ['menu'], () => import('../routes/Sys/Menu/SysMenuPage')),
     },
+    '/sys/role': {
+      component: dynamicWrapper(app, ['role'], () => import('../routes/Sys/Role/SysRolePage')),
+    },
     '/dashboard/workplace': {
       component: dynamicWrapper(app, ['project', 'activities', 'chart'], () =>
         import('../routes/Dashboard/Workplace')

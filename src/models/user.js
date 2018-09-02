@@ -26,6 +26,7 @@ export default {
           userid: response.user.userId,
         },
       });
+      return response;
     },
     *fetchMenu(_, { call, put }) {
       const response = yield call(queryMenu);
@@ -33,6 +34,7 @@ export default {
         type: 'saveMenu',
         payload: response,
       });
+      return response;
     },
   },
 

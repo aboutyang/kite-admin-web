@@ -89,9 +89,12 @@ export default function request(url, options) {
       const { dispatch } = store;
       const status = e.name;
       if (status === 401) {
-        dispatch({
-          type: 'login/logout',
-        });
+        if (getToken()) {
+          dispatch({
+            type: 'login/logout',
+          });
+        }
+
         return;
       }
       if (status === 403) {

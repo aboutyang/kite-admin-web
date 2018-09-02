@@ -62,7 +62,7 @@ class EditSysMenu extends PureComponent {
       loading,
     } = this.props;
 
-    const title = isUpdate ? '新增菜单' : `修改【${initObj.name}】菜单`;
+    const title = !isUpdate ? '新增菜单' : `修改【${initObj.name}】菜单`;
     const typeName = initObj.type === 0 ? '目录' : initObj.type === 1 ? '菜单' : '按钮';
 
     return (

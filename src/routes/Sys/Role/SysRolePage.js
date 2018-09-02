@@ -1,26 +1,10 @@
 import React, { PureComponent, Fragment } from 'react';
 import { connect } from 'dva';
 import moment from 'moment';
-import {
-  Card,
-  Icon,
-  Button,
-  Dropdown,
-  Menu,
-  message,
-  Divider,
-  Popconfirm,
-  Modal,
-  Form,
-  Row,
-  Col,
-  Input,
-  Tag,
-} from 'antd';
+import { Card, Button, message, Divider, Popconfirm, Modal, Form, Row, Col, Input } from 'antd';
 import StandardTable from 'components/StandardTable';
 import PageHeaderLayout from '../../../layouts/PageHeaderLayout';
-import EditSysUser from './EditSysUser';
-
+import EditSysRole from './EditSysRole';
 import styles from '../TableList.less';
 
 const getValue = obj =>
@@ -28,22 +12,21 @@ const getValue = obj =>
     .map(key => obj[key])
     .join(',');
 
-@connect(({ sysUser, loading }) => ({
-  sysUser,
-  loading: loading.models.sysUser,
+@connect(({ role, loading }) => ({
+  role,
+  loading: loading.models.role,
 }))
 @Form.create()
-export default class SysUserPage extends PureComponent {
+export default class SysRolePage extends PureComponent {
   state = {
     modalVisible: false,
     selectedRows: [],
-    formValues: {},
   };
 
   componentDidMount() {
     const { dispatch } = this.props;
     dispatch({
-      type: 'sysUser/fetch',
+      type: 'role/fetch',
     });
   }
 
@@ -68,7 +51,7 @@ export default class SysUserPage extends PureComponent {
     }
 
     dispatch({
-      type: 'sysUser/fetch',
+      type: 'role/fetch',
       params,
     });
   };
@@ -80,7 +63,7 @@ export default class SysUserPage extends PureComponent {
       formValues: {},
     });
     dispatch({
-      type: 'sysUser/fetch',
+      type: 'role/fetch',
     });
   };
 
@@ -91,7 +74,7 @@ export default class SysUserPage extends PureComponent {
     const research = this.handleReSearch;
 
     Modal.confirm({
-      title: '删除用户',
+      title: '删除角色',
       content: '确定要删除选中的记录？',
       okText: '确认',
       okType: 'danger',
@@ -99,15 +82,13 @@ export default class SysUserPage extends PureComponent {
       onOk() {
         if (!selectedRows) return;
         dispatch({
-          type: 'sysUser/remove',
-          payload: selectedRows.map(row => row.userId),
+          type: 'role/removeRole',
+          payload: selectedRows.map(row => row.roleId),
         })
           .then(response => {
             if (response) {
               if (response.code === 0) {
-                message.success(
-                  `删除用户【${selectedRows.map(row => row.username).join(',')}】成功`
-                );
+                message.success(`删除角色【${selectedRows.map(row => row.name).join(',')}】成功`);
                 return true;
               } else {
                 message.error(response.msg);
@@ -124,60 +105,6 @@ export default class SysUserPage extends PureComponent {
           });
       },
     });
-  };
-
-  generatorUserData = () => {
-    const { dispatch } = this.props;
-    dispatch({
-      type: 'sysUser/generator',
-    })
-      .then(response => {
-        if (response) {
-          if (response.code === 0) {
-            message.success(`测试数据生成成功！`);
-            return true;
-          } else {
-            message.error(response.msg);
-          }
-        } else {
-          message.error('系统异常，请稍后重试！');
-        }
-        return false;
-      })
-      .then(flag => {
-        if (flag) {
-          this.handleReSearch();
-        }
-      });
-  };
-
-  changeStatus = status => {
-    const { dispatch } = this.props;
-    const { selectedRows } = this.state;
-
-    dispatch({
-      type: 'sysUser/changeStatus',
-      userIds: selectedRows.map(row => row.userId),
-      status,
-    })
-      .then(response => {
-        if (response) {
-          if (response.code === 0) {
-            message.success(`操作成功!`);
-            return true;
-          } else {
-            message.error(response.msg);
-          }
-        } else {
-          message.error('系统异常，请稍后重试！');
-        }
-        return false;
-      })
-      .then(flag => {
-        if (flag) {
-          this.handleReSearch();
-        }
-      });
   };
 
   handleSelectRows = rows => {
@@ -204,7 +131,7 @@ export default class SysUserPage extends PureComponent {
       if (err) return;
 
       dispatch({
-        type: 'sysUser/fetch',
+        type: 'role/fetch',
         params: fieldsValue,
       });
     });
@@ -213,41 +140,65 @@ export default class SysUserPage extends PureComponent {
   handleReSearch = () => {
     const {
       dispatch,
-      sysUser: { lastQuery },
+      role: { lastQuery },
     } = this.props;
     dispatch({
-      type: 'sysUser/fetch',
+      type: 'role/fetch',
       params: lastQuery,
     });
   };
 
-  handleAdd = (fields, isUpdate, form) => {
+  handleAdd = (fields, isUpdate) => {
     const { dispatch } = this.props;
-    const dispatchType = isUpdate ? 'sysUser/update' : 'sysUser/add';
-    dispatch({
-      type: dispatchType,
-      payload: {
-        ...fields,
-      },
-    })
-      .then(response => {
-        if (response.code === 0) {
-          if (isUpdate) {
-            message.success(`更新用户【${fields.username}】成功`);
-          } else {
-            message.success(`添加用户【${fields.username}】成功`);
-          }
-          form.resetFields();
-          this.setState({
-            modalVisible: false,
-          });
-        } else {
-          message.error(response.msg);
-        }
+    if (isUpdate) {
+      dispatch({
+        type: 'role/updateRole',
+        payload: fields,
       })
-      .then(() => {
-        this.handleReSearch();
-      });
+        .then(response => {
+          if (response) {
+            if (response.code === 0) {
+              message.success(`角色修改成功`);
+            } else {
+              message.error(response.msg);
+            }
+          } else {
+            message.error('系统异常，请稍后重试！');
+          }
+          this.handleModalVisible();
+        })
+        .then(() => {
+          this.handleSearch();
+        });
+    } else {
+      dispatch({
+        type: 'role/saveRole',
+        payload: fields,
+      })
+        .then(response => {
+          if (response) {
+            if (response.code === 0) {
+              message.success(`新增菜单成功`);
+            } else {
+              message.error(response.msg);
+            }
+          } else {
+            message.error('系统异常，请稍后重试！');
+          }
+          this.handleModalVisible();
+        })
+        .then(() => {
+          this.handleSearch();
+        });
+    }
+  };
+
+  showAddFrom = () => {
+    this.setState({
+      modalVisible: true,
+      isUpdate: false,
+      initObj: {},
+    });
   };
 
   showUpdateForm = record => {
@@ -263,13 +214,13 @@ export default class SysUserPage extends PureComponent {
   handleDelete = record => {
     const { dispatch } = this.props;
     dispatch({
-      type: 'sysUser/remove',
-      payload: [record.userId],
+      type: 'role/removeRole',
+      payload: [record.roleId],
     })
       .then(response => {
         if (response) {
           if (response.code === 0) {
-            message.success(`删除用户【${record.username}】成功`);
+            message.success(`删除角色【${record.roleName}】成功`);
           } else {
             message.error(response.msg);
           }
@@ -289,7 +240,7 @@ export default class SysUserPage extends PureComponent {
       <Form onSubmit={this.handleSearch} layout="inline">
         <Row gutter={{ md: 8, lg: 24, xl: 48 }}>
           <Col md={8} sm={24}>
-            {getFieldDecorator('username')(<Input placeholder="用户名" />)}
+            {getFieldDecorator('roleName')(<Input placeholder="角色名" />)}
           </Col>
           <Col md={8} sm={24}>
             <span className={styles.submitButtons}>
@@ -305,11 +256,10 @@ export default class SysUserPage extends PureComponent {
 
   render() {
     const {
-      sysUser: { page },
+      role: { page },
       loading,
     } = this.props;
     const { selectedRows, modalVisible, isUpdate, initObj } = this.state;
-
     const data = {
       ...page,
       pagination: {
@@ -321,35 +271,20 @@ export default class SysUserPage extends PureComponent {
 
     const columns = [
       {
-        title: '用户ID',
-        dataIndex: 'userId',
+        title: '角色ID',
+        dataIndex: 'roleId',
       },
       {
-        title: '用户名',
-        dataIndex: 'username',
+        title: '角色名',
+        dataIndex: 'roleName',
       },
       {
         title: '所属部门',
         dataIndex: 'deptName',
       },
       {
-        title: '邮箱',
-        dataIndex: 'email',
-      },
-      {
-        title: '手机号',
-        dataIndex: 'mobile',
-      },
-      {
-        title: '状态',
-        dataIndex: 'status',
-        render(val) {
-          if (val === 1) {
-            return <Tag color="green">启用</Tag>;
-          } else {
-            return <Tag color="red">禁用</Tag>;
-          }
-        },
+        title: '备注',
+        dataIndex: 'remark',
       },
       {
         title: '创建时间',
@@ -372,29 +307,11 @@ export default class SysUserPage extends PureComponent {
               >
                 <a>刪除</a>
               </Popconfirm>
-              ,
             </Fragment>
           );
         },
       },
     ];
-
-    const menu = (
-      <Menu>
-        <Menu.Item key="remove" onClick={this.showDeleteConfirm}>
-          <a>删除</a>
-        </Menu.Item>
-        <Menu.Item key="enable" onClick={() => this.changeStatus('lock')}>
-          禁用
-        </Menu.Item>
-        <Menu.Item key="disable" onClick={() => this.changeStatus('unlock')}>
-          启用
-        </Menu.Item>
-        <Menu.Item key="generatorUserData" onClick={this.generatorUserData}>
-          生成100条测试数据
-        </Menu.Item>
-      </Menu>
-    );
 
     const parentMethods = {
       handleAdd: this.handleAdd,
@@ -402,27 +319,18 @@ export default class SysUserPage extends PureComponent {
     };
 
     return (
-      <PageHeaderLayout title="管理员列表">
+      <PageHeaderLayout title="角色管理">
         <Card bordered={false}>
           <div className={styles.tableList}>
             <div className={styles.tableListForm}>{this.renderSimpleForm()}</div>
             <div className={styles.tableListOperator}>
-              <Button icon="plus" type="primary" onClick={() => this.handleModalVisible(true)}>
+              <Button icon="plus" type="primary" onClick={() => this.showAddFrom()}>
                 新建
               </Button>
-              {selectedRows.length > 0 && (
-                <span>
-                  <Dropdown overlay={menu}>
-                    <Button>
-                      批量操作 <Icon type="down" />
-                    </Button>
-                  </Dropdown>
-                </span>
-              )}
             </div>
             <StandardTable
               selectedRows={selectedRows}
-              rowKey="userId"
+              rowKey="roleId"
               loading={loading}
               data={data}
               columns={columns}
@@ -432,7 +340,7 @@ export default class SysUserPage extends PureComponent {
           </div>
         </Card>
         {modalVisible && (
-          <EditSysUser
+          <EditSysRole
             {...parentMethods}
             modalVisible={modalVisible}
             isUpdate={isUpdate}

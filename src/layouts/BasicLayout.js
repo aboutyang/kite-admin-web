@@ -121,10 +121,13 @@ export default class BasicLayout extends React.PureComponent {
     });
     const { dispatch } = this.props;
     dispatch({
-      type: 'user/fetchCurrent',
-    });
-    dispatch({
       type: 'user/fetchMenu',
+    }).then(response => {
+      if (response && response.code === 0) {
+        dispatch({
+          type: 'user/fetchCurrent',
+        });
+      }
     });
   }
 

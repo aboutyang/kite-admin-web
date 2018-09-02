@@ -5,6 +5,7 @@ import {
   updateSysUser,
   generator,
   changeStatus,
+  userInfo,
 } from '../services/sysUser';
 
 export default {
@@ -13,6 +14,7 @@ export default {
   state: {
     page: [],
     lastQuery: {},
+    roleIdList: [],
   },
 
   effects: {
@@ -24,18 +26,29 @@ export default {
         query: params,
       });
     },
+    *userInfo({ userId }, { call, put }) {
+      const response = yield call(userInfo, userId);
+      yield put({
+        type: 'info',
+        response,
+      });
+    },
+    *clearRoleIdList(_, { put }) {
+      yield put({
+        type: 'roleIdList',
+      });
+    },
     *remove({ payload }, { call }) {
       const response = yield call(removeSysUser, payload);
       return response;
     },
     *add({ payload }, { call }) {
-      if (payload.isUpdate) {
-        const response = yield call(updateSysUser, payload);
-        return response;
-      } else {
-        const response = yield call(addSysUser, payload);
-        return response;
-      }
+      const response = yield call(addSysUser, payload);
+      return response;
+    },
+    *update({ payload }, { call }) {
+      const response = yield call(updateSysUser, payload);
+      return response;
     },
     *generator(_, { call }) {
       const response = yield call(generator);
@@ -53,6 +66,18 @@ export default {
         ...state,
         page: action.response.page,
         lastQuery: action.query,
+      };
+    },
+    info(state, action) {
+      return {
+        ...state,
+        roleIdList: action.response.user.roleIdList,
+      };
+    },
+    roleIdList(state) {
+      return {
+        ...state,
+        roleIdList: [],
       };
     },
   },

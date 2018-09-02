@@ -163,7 +163,7 @@ export default class SysMenuPage extends PureComponent {
         dataIndex: 'icon',
         render: v => (
           <div>
-            <i className={v} />
+            <i class={v} />
           </div>
         ),
       },

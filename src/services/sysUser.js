@@ -38,3 +38,7 @@ export async function changeStatus(userIds, status) {
     body: userIds,
   });
 }
+
+export async function userInfo(userId) {
+  return request(`/api/sys/user/info/${userId}`);
+}

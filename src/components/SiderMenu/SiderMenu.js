@@ -18,7 +18,7 @@ const getIcon = icon => {
       return <img src={icon} alt="icon" className={`${styles.icon} sider-menu-item-img`} />;
     }
     // return <Icon type={icon} />;
-    return <i className={icon} />;
+    return <i class={icon} />;
   }
 
   return icon;

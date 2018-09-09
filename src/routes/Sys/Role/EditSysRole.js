@@ -28,7 +28,6 @@ class EditSysRole extends PureComponent {
     dispatch({
       type: 'menu/treeMenu',
     });
-
     if (isUpdate) {
       dispatch({
         type: 'role/roleInfo',

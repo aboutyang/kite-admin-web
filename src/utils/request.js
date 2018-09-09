@@ -2,7 +2,7 @@ import fetch from 'dva/fetch';
 import { notification } from 'antd';
 import { routerRedux } from 'dva/router';
 import store from '../index';
-import { getToken } from './authority';
+import { getToken, setToken } from './authority';
 
 const codeMessage = {
   200: '服务器成功返回请求的数据。',
@@ -80,9 +80,14 @@ export default function request(url, options) {
   return fetch(url, newOptions)
     .then(checkStatus)
     .then(response => {
-      if (newOptions.method === 'DELETE' || response.status === 204) {
+      if (response.status === 204) {
         return response.text();
       }
+
+      if (response.headers.get('refreshtoken')) {
+        setToken(response.headers.get('refreshtoken'));
+      }
+
       return response.json();
     })
     .catch(e => {

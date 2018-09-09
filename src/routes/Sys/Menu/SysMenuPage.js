@@ -2,6 +2,7 @@ import React, { PureComponent, Fragment } from 'react';
 
 import { connect } from 'dva';
 import { Card, Button, Table, Popconfirm, Divider, message } from 'antd';
+import 'font-awesome/css/font-awesome.min.css';
 
 import PageHeaderLayout from '../../../layouts/PageHeaderLayout';
 import EditSysMenu from './EditSysMenu';
@@ -163,7 +164,7 @@ export default class SysMenuPage extends PureComponent {
         dataIndex: 'icon',
         render: v => (
           <div>
-            <i class={v} />
+            <i className={v} />
           </div>
         ),
       },

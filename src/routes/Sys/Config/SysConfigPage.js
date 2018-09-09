@@ -1,37 +1,38 @@
 import React, { PureComponent, Fragment } from 'react';
-import { connect } from 'dva';
-import moment from 'moment';
-import { Card, Button, message, Divider, Popconfirm, Modal, Form, Row, Col, Input } from 'antd';
-import StandardTable from 'components/StandardTable';
-import PageHeaderLayout from '../../../layouts/PageHeaderLayout';
-import EditSysRole from './EditSysRole';
-import styles from '../TableList.less';
-import collectionJoinStr from '../../../utils/collections';
 
-@connect(({ role, loading }) => ({
-  role,
-  loading: loading.models.role,
+import { connect } from 'dva';
+import { Form, Row, Col, Input, Button, Card, Table, Divider, Popconfirm, message } from 'antd';
+
+import styles from '../TableList.less';
+import PageHeaderLayout from '../../../layouts/PageHeaderLayout';
+import collectionJoinStr from '../../../utils/collections';
+import EditSysConfig from './EditSysConfig';
+
+@connect(({ sysConfig, loading }) => ({
+  sysConfig,
+  page: sysConfig.page,
+  loading: loading.models.sysConfig,
 }))
 @Form.create()
-export default class SysRolePage extends PureComponent {
+export default class SysConfigPage extends PureComponent {
   state = {
     modalVisible: false,
-    selectedRows: [],
   };
 
   componentDidMount() {
     const { dispatch } = this.props;
     dispatch({
-      type: 'role/fetch',
+      type: 'sysConfig/fetch',
     });
   }
 
   handleStandardTableChange = (pagination, filtersArg, sorter) => {
     const { dispatch } = this.props;
-    const { formValues } = this.state;
 
     const filters = Object.keys(filtersArg).reduce((obj, key) => {
-      const newObj = { ...obj };
+      const newObj = {
+        ...obj,
+      };
       newObj[key] = collectionJoinStr(filtersArg[key]);
       return newObj;
     }, {});
@@ -39,15 +40,14 @@ export default class SysRolePage extends PureComponent {
     const params = {
       page: pagination.current,
       limit: pagination.pageSize,
-      ...formValues,
       ...filters,
     };
     if (sorter.field) {
-      params.sorter = `${sorter.field}_${sorter.order}`;
+      params.sidx = `${sorter.field}`;
+      params.order = `${sorter.order}`;
     }
-
     dispatch({
-      type: 'role/fetch',
+      type: 'sysConfig/fetch',
       params,
     });
   };
@@ -55,64 +55,8 @@ export default class SysRolePage extends PureComponent {
   handleFormReset = () => {
     const { form, dispatch } = this.props;
     form.resetFields();
-    this.setState({
-      formValues: {},
-    });
     dispatch({
-      type: 'role/fetch',
-    });
-  };
-
-  showDeleteConfirm = () => {
-    const { dispatch } = this.props;
-    const { selectedRows } = this.state;
-
-    const research = this.handleReSearch;
-
-    Modal.confirm({
-      title: '删除角色',
-      content: '确定要删除选中的记录？',
-      okText: '确认',
-      okType: 'danger',
-      cancelText: '取消',
-      onOk() {
-        if (!selectedRows) return;
-        dispatch({
-          type: 'role/removeRole',
-          payload: selectedRows.map(row => row.roleId),
-        })
-          .then(response => {
-            if (response) {
-              if (response.code === 0) {
-                message.success(`删除角色【${selectedRows.map(row => row.name).join(',')}】成功`);
-                return true;
-              } else {
-                message.error(response.msg);
-              }
-            } else {
-              message.error('系统异常，请稍后重试！');
-            }
-            return false;
-          })
-          .then(flag => {
-            if (flag) {
-              research();
-            }
-          });
-      },
-    });
-  };
-
-  handleSelectRows = rows => {
-    this.setState({
-      selectedRows: rows,
-    });
-  };
-
-  handleModalVisible = flag => {
-    this.setState({
-      modalVisible: !!flag,
-      isUpdate: false,
+      type: 'sysConfig/fetch',
     });
   };
 
@@ -120,14 +64,11 @@ export default class SysRolePage extends PureComponent {
     if (e) {
       e.preventDefault();
     }
-
     const { dispatch, form } = this.props;
-
     form.validateFields((err, fieldsValue) => {
       if (err) return;
-
       dispatch({
-        type: 'role/fetch',
+        type: 'sysConfig/fetch',
         params: fieldsValue,
       });
     });
@@ -136,57 +77,12 @@ export default class SysRolePage extends PureComponent {
   handleReSearch = () => {
     const {
       dispatch,
-      role: { lastQuery },
+      sysConfig: { lastQuery },
     } = this.props;
     dispatch({
-      type: 'role/fetch',
+      type: 'sysConfig/fetch',
       params: lastQuery,
     });
-  };
-
-  handleAdd = (fields, isUpdate) => {
-    const { dispatch } = this.props;
-    if (isUpdate) {
-      dispatch({
-        type: 'role/updateRole',
-        payload: fields,
-      })
-        .then(response => {
-          if (response) {
-            if (response.code === 0) {
-              message.success(`角色修改成功`);
-            } else {
-              message.error(response.msg);
-            }
-          } else {
-            message.error('系统异常，请稍后重试！');
-          }
-          this.handleModalVisible();
-        })
-        .then(() => {
-          this.handleSearch();
-        });
-    } else {
-      dispatch({
-        type: 'role/saveRole',
-        payload: fields,
-      })
-        .then(response => {
-          if (response) {
-            if (response.code === 0) {
-              message.success(`新增菜单成功`);
-            } else {
-              message.error(response.msg);
-            }
-          } else {
-            message.error('系统异常，请稍后重试！');
-          }
-          this.handleModalVisible();
-        })
-        .then(() => {
-          this.handleSearch();
-        });
-    }
   };
 
   showAddFrom = () => {
@@ -194,6 +90,13 @@ export default class SysRolePage extends PureComponent {
       modalVisible: true,
       isUpdate: false,
       initObj: {},
+    });
+  };
+
+  handleModalVisible = flag => {
+    this.setState({
+      modalVisible: !!flag,
+      isUpdate: false,
     });
   };
 
@@ -207,16 +110,61 @@ export default class SysRolePage extends PureComponent {
     });
   };
 
-  handleDelete = record => {
+  handleAdd = (fields, isUpdate) => {
+    const { dispatch } = this.props;
+    if (isUpdate) {
+      dispatch({
+        type: 'sysConfig/updateConfig',
+        payload: fields,
+      })
+        .then(response => {
+          if (response) {
+            if (response.code === 0) {
+              message.success(`参数修改成功`);
+            } else {
+              message.error(response.msg);
+            }
+          } else {
+            message.error('系统异常，请稍后重试！');
+          }
+          this.handleModalVisible();
+        })
+        .then(() => {
+          this.handleReSearch();
+        });
+    } else {
+      dispatch({
+        type: 'sysConfig/saveConfig',
+        payload: fields,
+      })
+        .then(response => {
+          if (response) {
+            if (response.code === 0) {
+              message.success(`新增参数成功`);
+            } else {
+              message.error(response.msg);
+            }
+          } else {
+            message.error('系统异常，请稍后重试！');
+          }
+          this.handleModalVisible();
+        })
+        .then(() => {
+          this.handleReSearch();
+        });
+    }
+  };
+
+  handleDeforcelete = record => {
     const { dispatch } = this.props;
     dispatch({
-      type: 'role/removeRole',
-      payload: [record.roleId],
+      type: 'sysConfig/deleteConfig',
+      payload: [record.id],
     })
       .then(response => {
         if (response) {
           if (response.code === 0) {
-            message.success(`删除角色【${record.roleName}】成功`);
+            message.success(`删除参数【${record.paramKey}】成功`);
           } else {
             message.error(response.msg);
           }
@@ -236,7 +184,7 @@ export default class SysRolePage extends PureComponent {
       <Form onSubmit={this.handleSearch} layout="inline">
         <Row gutter={{ md: 8, lg: 24, xl: 48 }}>
           <Col md={8} sm={24}>
-            {getFieldDecorator('roleName')(<Input placeholder="角色名" />)}
+            {getFieldDecorator('key')(<Input placeholder="参数名" />)}
           </Col>
           <Col md={8} sm={24}>
             <span className={styles.submitButtons}>
@@ -251,42 +199,39 @@ export default class SysRolePage extends PureComponent {
   }
 
   render() {
-    const {
-      role: { page },
-      loading,
-    } = this.props;
-    const { selectedRows, modalVisible, isUpdate, initObj } = this.state;
-    const data = {
-      ...page,
-      pagination: {
-        total: page.totalCount,
-        pageSize: page.pageSize,
-        current: page.currPage,
-      },
+    const { page, loading } = this.props;
+    const { modalVisible, isUpdate, initObj } = this.state;
+    if (page && page.pageSize > 0) {
+      // continue
+    } else {
+      return <div>waiting...</div>;
+    }
+
+    const pagination = {
+      total: page.totalCount,
+      pageSize: page.pageSize,
+      current: page.currPage,
+      showSizeChanger: true,
+      showQuickJumper: true,
     };
+    const { list: data } = page;
 
     const columns = [
       {
-        title: '角色ID',
-        dataIndex: 'roleId',
+        title: 'ID',
+        dataIndex: 'id',
       },
       {
-        title: '角色名',
-        dataIndex: 'roleName',
+        title: '参数名',
+        dataIndex: 'paramKey',
       },
       {
-        title: '所属部门',
-        dataIndex: 'deptName',
+        title: '参数值',
+        dataIndex: 'paramValue',
       },
       {
         title: '备注',
         dataIndex: 'remark',
-      },
-      {
-        title: '创建时间',
-        dataIndex: 'createTime',
-        sorter: true,
-        render: val => <span>{moment(val).format('YYYY-MM-DD HH:mm:ss')}</span>,
       },
       {
         title: '操作',
@@ -315,7 +260,7 @@ export default class SysRolePage extends PureComponent {
     };
 
     return (
-      <PageHeaderLayout title="角色管理">
+      <PageHeaderLayout title="参数管理">
         <Card bordered={false}>
           <div className={styles.tableList}>
             <div className={styles.tableListForm}>{this.renderSimpleForm()}</div>
@@ -324,25 +269,22 @@ export default class SysRolePage extends PureComponent {
                 新建
               </Button>
             </div>
-            <StandardTable
-              selectedRows={selectedRows}
-              rowKey="roleId"
+            <Table
               loading={loading}
-              data={data}
+              rowKey="id"
+              dataSource={data}
               columns={columns}
-              onSelectRow={this.handleSelectRows}
+              pagination={pagination}
               onChange={this.handleStandardTableChange}
             />
           </div>
         </Card>
-        {modalVisible && (
-          <EditSysRole
-            {...parentMethods}
-            modalVisible={modalVisible}
-            isUpdate={isUpdate}
-            initObj={initObj}
-          />
-        )}
+        <EditSysConfig
+          {...parentMethods}
+          modalVisible={modalVisible}
+          isUpdate={isUpdate}
+          initObj={initObj}
+        />
       </PageHeaderLayout>
     );
   }

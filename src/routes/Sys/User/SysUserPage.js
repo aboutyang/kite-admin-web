@@ -22,11 +22,7 @@ import PageHeaderLayout from '../../../layouts/PageHeaderLayout';
 import EditSysUser from './EditSysUser';
 
 import styles from '../TableList.less';
-
-const getValue = obj =>
-  Object.keys(obj)
-    .map(key => obj[key])
-    .join(',');
+import collectionJoinStr from '../../../utils/collections';
 
 @connect(({ sysUser, loading }) => ({
   sysUser,
@@ -53,7 +49,7 @@ export default class SysUserPage extends PureComponent {
 
     const filters = Object.keys(filtersArg).reduce((obj, key) => {
       const newObj = { ...obj };
-      newObj[key] = getValue(filtersArg[key]);
+      newObj[key] = collectionJoinStr(filtersArg[key]);
       return newObj;
     }, {});
 
@@ -289,7 +285,7 @@ export default class SysUserPage extends PureComponent {
       <Form onSubmit={this.handleSearch} layout="inline">
         <Row gutter={{ md: 8, lg: 24, xl: 48 }}>
           <Col md={8} sm={24}>
-            {getFieldDecorator('username')(<Input placeholder="用户名" />)}
+            {getFieldDecorator('query')(<Input placeholder="用户名" />)}
           </Col>
           <Col md={8} sm={24}>
             <span className={styles.submitButtons}>
@@ -372,7 +368,6 @@ export default class SysUserPage extends PureComponent {
               >
                 <a>刪除</a>
               </Popconfirm>
-              ,
             </Fragment>
           );
         },

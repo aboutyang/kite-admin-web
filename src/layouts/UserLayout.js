@@ -4,7 +4,6 @@ import DocumentTitle from 'react-document-title';
 import { Icon } from 'antd';
 import GlobalFooter from '../components/GlobalFooter';
 import styles from './UserLayout.less';
-import logo from '../assets/logo.svg';
 import { getRoutes, getPageQuery, getQueryPath } from '../utils/utils';
 
 const links = [
@@ -27,7 +26,7 @@ const links = [
 
 const copyright = (
   <Fragment>
-    Copyright <Icon type="copyright" /> 2018 www.jd.com
+    Copyright <Icon type="copyright" /> 2018 www.yw1982.com
   </Fragment>
 );
 

@@ -2,6 +2,7 @@ import React, { PureComponent } from 'react';
 import { Layout, Menu } from 'antd';
 import pathToRegexp from 'path-to-regexp';
 import { Link } from 'dva/router';
+import 'font-awesome/css/font-awesome.min.css';
 import styles from './index.less';
 import { urlToList } from '../_utils/pathTools';
 
@@ -18,7 +19,8 @@ const getIcon = icon => {
       return <img src={icon} alt="icon" className={`${styles.icon} sider-menu-item-img`} />;
     }
     // return <Icon type={icon} />;
-    return <i class={icon} />;
+    return <i className={icon} />;
+    // return <div className={icon} />;
   }
 
   return icon;

@@ -1,6 +1,6 @@
 import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
-import { Layout, Icon, message } from 'antd';
+import { Layout, Icon } from 'antd';
 import DocumentTitle from 'react-document-title';
 import { connect } from 'dva';
 import { Route, Redirect, Switch, routerRedux } from 'dva/router';
@@ -8,6 +8,8 @@ import { ContainerQuery } from 'react-container-query';
 import classNames from 'classnames';
 import pathToRegexp from 'path-to-regexp';
 import { enquireScreen, unenquireScreen } from 'enquire-js';
+import { urlToList } from 'components/_utils/pathTools';
+import { getMenuMatchKeys } from 'components/SiderMenu/SiderMenu';
 import GlobalHeader from '../components/GlobalHeader';
 import GlobalFooter from '../components/GlobalFooter';
 import SiderMenu from '../components/SiderMenu';
@@ -16,8 +18,6 @@ import { getRoutes } from '../utils/utils';
 import Authorized from '../utils/Authorized';
 import { getMenuData } from '../common/menu';
 import logo from '../assets/logo.svg';
-import { urlToList } from 'components/_utils/pathTools';
-import { getMenuMatchKeys } from 'components/SiderMenu/SiderMenu';
 
 const { Content, Header, Footer } = Layout;
 const { AuthorizedRoute, check } = Authorized;
@@ -90,13 +90,10 @@ enquireScreen(b => {
   isMobile = b;
 });
 
-
-@connect(({ user, global = {}, loading }) => ({
+@connect(({ user, global = {} }) => ({
   currentUser: user.currentUser,
   menuList: user.menuList,
   collapsed: global.collapsed,
-  fetchingNotices: loading.effects['global/fetchNotices'],
-  notices: global.notices,
 }))
 export default class BasicLayout extends React.PureComponent {
   static childContextTypes = {
@@ -124,10 +121,13 @@ export default class BasicLayout extends React.PureComponent {
     });
     const { dispatch } = this.props;
     dispatch({
-      type: 'user/fetchCurrent',
-    });
-    dispatch({
       type: 'user/fetchMenu',
+    }).then(response => {
+      if (response && response.code === 0) {
+        dispatch({
+          type: 'user/fetchCurrent',
+        });
+      }
     });
   }
 
@@ -181,15 +181,6 @@ export default class BasicLayout extends React.PureComponent {
     });
   };
 
-  handleNoticeClear = type => {
-    message.success(`清空了${type}`);
-    const { dispatch } = this.props;
-    dispatch({
-      type: 'global/clearNotices',
-      payload: type,
-    });
-  };
-
   handleMenuClick = ({ key }) => {
     const { dispatch } = this.props;
     if (key === 'triggerError') {
@@ -203,15 +194,6 @@ export default class BasicLayout extends React.PureComponent {
     }
   };
 
-  handleNoticeVisibleChange = visible => {
-    const { dispatch } = this.props;
-    if (visible) {
-      dispatch({
-        type: 'global/fetchNotices',
-      });
-    }
-  };
-
   /**
    * Convert pathname to openKeys
    * /list/search/articles = > ['list','/list/search']
@@ -220,22 +202,12 @@ export default class BasicLayout extends React.PureComponent {
   getDefaultCollapsedSubMenus = (props, menuData) => {
     const {
       location: { pathname },
-    } =
-      props || this.props;
+    } = props || this.props;
     return getMenuMatchKeys(menuData, urlToList(pathname));
-  }
+  };
 
   render() {
-    const {
-      currentUser,
-      collapsed,
-      fetchingNotices,
-      notices,
-      routerData,
-      menuList,
-      match,
-      location,
-    } = this.props;
+    const { currentUser, collapsed, routerData, menuList, match, location } = this.props;
 
     redirectData = [];
     menuList.forEach(getRedirect);
@@ -264,14 +236,10 @@ export default class BasicLayout extends React.PureComponent {
             <GlobalHeader
               logo={logo}
               currentUser={currentUser}
-              fetchingNotices={fetchingNotices}
-              notices={notices}
               collapsed={collapsed}
               isMobile={mb}
-              onNoticeClear={this.handleNoticeClear}
               onCollapse={this.handleMenuCollapse}
               onMenuClick={this.handleMenuClick}
-              onNoticeVisibleChange={this.handleNoticeVisibleChange}
             />
           </Header>
           <Content style={{ margin: '24px 24px 0', height: '100%' }}>
@@ -299,13 +267,13 @@ export default class BasicLayout extends React.PureComponent {
                 {
                   key: '首页',
                   title: '首页',
-                  href: 'http://www.jd.com',
+                  href: 'http://www.yw1982.com',
                   blankTarget: true,
                 },
               ]}
               copyright={
                 <Fragment>
-                  Copyright <Icon type="copyright" /> 2018 www.jd.com
+                  Copyright <Icon type="copyright" /> 2018 www.yw1982.com
                 </Fragment>
               }
             />

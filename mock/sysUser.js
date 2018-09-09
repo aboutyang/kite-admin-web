@@ -1,0 +1,197 @@
+export function querySysUser(req, res) {
+  res.send({
+    msg: 'success',
+    code: 0,
+    page: {
+      pagination: {
+        total: 21,
+        pageSize: 10,
+        current: 1,
+      },
+      list: [
+        {
+          userId: '1',
+          username: 'yang',
+          email: '2dsjak@cc.com',
+          mobile: '13311200817',
+          status: 1,
+          deptName: '二级部门11',
+        },
+        {
+          userId: '2',
+          username: 'wang',
+          email: '2dsk@cc.com',
+          mobile: '13311200217',
+          status: 1,
+          deptName: '二级部门11',
+        },
+        {
+          userId: '3',
+          username: 'yang',
+          email: '2dsjak@cc.com',
+          mobile: '13311200817',
+          status: 1,
+          deptName: '二级部门11',
+        },
+        {
+          userId: '4',
+          username: 'wang',
+          email: '2dsk@cc.com',
+          mobile: '13311200217',
+          status: 1,
+          deptName: '二级部门11',
+        },
+        {
+          userId: '5',
+          username: 'yang',
+          email: '2dsjak@cc.com',
+          mobile: '13311200817',
+          status: 1,
+          deptName: '二级部门11',
+        },
+        {
+          userId: '6',
+          username: 'wang',
+          email: '2dsk@cc.com',
+          mobile: '13311200217',
+          status: 1,
+          deptName: '二级部门11',
+        },
+        {
+          userId: '7',
+          username: 'yang',
+          email: '2dsjak@cc.com',
+          mobile: '13311200817',
+          status: 1,
+          deptName: '二级部门11',
+        },
+        {
+          userId: '8',
+          username: 'wang',
+          email: '2dsk@cc.com',
+          mobile: '13311200217',
+          status: 1,
+          deptName: '二级部门11',
+        },
+        {
+          userId: '9',
+          username: 'yang',
+          email: '2dsjak@cc.com',
+          mobile: '13311200817',
+          status: 1,
+          deptName: '二级部门11',
+        },
+        {
+          userId: '10',
+          username: 'wang',
+          email: '2dsk@cc.com',
+          mobile: '13311200217',
+          status: 1,
+          deptName: '二级部门11',
+        },
+        {
+          userId: '11',
+          username: 'yang',
+          email: '2dsjak@cc.com',
+          mobile: '13311200817',
+          status: 1,
+          deptName: '二级部门11',
+        },
+        {
+          userId: '12',
+          username: 'wang',
+          email: '2dsk@cc.com',
+          mobile: '13311200217',
+          status: 1,
+          deptName: '二级部门11',
+        },
+        {
+          userId: '13',
+          username: 'yang',
+          email: '2dsjak@cc.com',
+          mobile: '13311200817',
+          status: 1,
+          deptName: '二级部门11',
+        },
+        {
+          userId: '14',
+          username: 'wang',
+          email: '2dsk@cc.com',
+          mobile: '13311200217',
+          status: 1,
+          deptName: '二级部门11',
+        },
+        {
+          userId: '15',
+          username: 'yang',
+          email: '2dsjak@cc.com',
+          mobile: '13311200817',
+          status: 1,
+          deptName: '二级部门11',
+        },
+        {
+          userId: '16',
+          username: 'wang',
+          email: '2dsk@cc.com',
+          mobile: '13311200217',
+          status: 1,
+          deptName: '二级部门11',
+        },
+        {
+          userId: '17',
+          username: 'yang',
+          email: '2dsjak@cc.com',
+          mobile: '13311200817',
+          status: 1,
+          deptName: '二级部门11',
+        },
+        {
+          userId: '18',
+          username: 'wang',
+          email: '2dsk@cc.com',
+          mobile: '13311200217',
+          status: 1,
+          deptName: '二级部门11',
+        },
+        {
+          userId: '19',
+          username: 'wang',
+          email: '2dsk@cc.com',
+          mobile: '13311200217',
+          status: 1,
+          deptName: '二级部门11',
+        },
+        {
+          userId: '20',
+          username: 'yang',
+          email: '2dsjak@cc.com',
+          mobile: '13311200817',
+          status: 1,
+          deptName: '二级部门11',
+        },
+        {
+          userId: '21',
+          username: 'wang',
+          email: '2dsk@cc.com',
+          mobile: '13311200217',
+          status: 1,
+          deptName: '二级部门11',
+        },
+      ],
+    },
+  });
+}
+
+export function removeSysUser(req, res) {
+  res.send({
+    msg: 'success',
+    code: 0,
+  });
+}
+
+export function addSysUser(req, res) {
+  res.send({
+    msg: 'success',
+    code: 0,
+  });
+}

@@ -2,7 +2,7 @@ import fetch from 'dva/fetch';
 import { notification } from 'antd';
 import { routerRedux } from 'dva/router';
 import store from '../index';
-import { getToken } from './authority';
+import { getToken, setToken } from './authority';
 
 const codeMessage = {
   200: '服务器成功返回请求的数据。',
@@ -48,9 +48,9 @@ export default function request(url, options) {
     credentials: 'include',
   };
   // append jwt token
-  if(getToken()){
+  if (getToken()) {
     defaultOptions.headers = {
-      Authorization:  `Bearer ${getToken()}`,
+      token: `${getToken()}`,
       ...defaultOptions.headers,
     };
   }
@@ -80,18 +80,26 @@ export default function request(url, options) {
   return fetch(url, newOptions)
     .then(checkStatus)
     .then(response => {
-      if (newOptions.method === 'DELETE' || response.status === 204) {
+      if (response.status === 204) {
         return response.text();
       }
+
+      if (response.headers.get('refreshtoken')) {
+        setToken(response.headers.get('refreshtoken'));
+      }
+
       return response.json();
     })
     .catch(e => {
       const { dispatch } = store;
       const status = e.name;
       if (status === 401) {
-        dispatch({
-          type: 'login/logout',
-        });
+        if (getToken()) {
+          dispatch({
+            type: 'login/logout',
+          });
+        }
+
         return;
       }
       if (status === 403) {

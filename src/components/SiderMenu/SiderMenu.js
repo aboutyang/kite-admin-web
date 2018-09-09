@@ -1,7 +1,8 @@
 import React, { PureComponent } from 'react';
-import { Layout, Menu, Icon } from 'antd';
+import { Layout, Menu } from 'antd';
 import pathToRegexp from 'path-to-regexp';
 import { Link } from 'dva/router';
+import 'font-awesome/css/font-awesome.min.css';
 import styles from './index.less';
 import { urlToList } from '../_utils/pathTools';
 
@@ -17,7 +18,9 @@ const getIcon = icon => {
     if (icon.indexOf('http') === 0) {
       return <img src={icon} alt="icon" className={`${styles.icon} sider-menu-item-img`} />;
     }
-    return <Icon type={icon} />;
+    // return <Icon type={icon} />;
+    return <i className={icon} />;
+    // return <div className={icon} />;
   }
 
   return icon;
@@ -48,7 +51,15 @@ export const getMenuMatchKeys = (flatMenuKeys, paths) => {
   //     matchKeys.concat(flatMenuKeys.filter(item => pathToRegexp(item).test(path))),
   //   []
   // );
-  const result = paths.filter(path => flatMenuKeys.filter(item => pathToRegexp(item).test(path)))
+  const result = paths.filter(path =>
+    flatMenuKeys.filter(item => {
+      if (item) {
+        return pathToRegexp(item).test(path);
+      } else {
+        return false;
+      }
+    })
+  );
   return result;
 };
 
@@ -58,28 +69,6 @@ export default class SiderMenu extends PureComponent {
     this.state = {
       openKeys: props.openKeys,
     };
-  }
-  
-  // componentWillReceiveProps(nextProps) {
-  //   const { location } = this.props;
-  //   if (nextProps.location.pathname !== location.pathname) {
-  //     this.setState({
-  //       openKeys: this.getDefaultCollapsedSubMenus(nextProps),
-  //     });
-  //   }
-  // }
-
-  /**
-   * Convert pathname to openKeys
-   * /list/search/articles = > ['list','/list/search']
-   * @param  props
-   */
-  getDefaultCollapsedSubMenus(props) {
-    const {
-      location: { pathname },
-    } =
-      props || this.props;
-    return getMenuMatchKeys(props.menuData, urlToList(pathname));
   }
 
   /**
@@ -94,9 +83,12 @@ export default class SiderMenu extends PureComponent {
     // Is it a http link
     if (/^https?:\/\//.test(itemPath)) {
       return (
-        <a href={itemPath} target={target}>
+        <a href={itemPath} target="view_window">
           {icon}
-          <span>{name}</span>
+          <span>
+            &nbsp;&nbsp;
+            {name}
+          </span>
         </a>
       );
     }
@@ -115,7 +107,10 @@ export default class SiderMenu extends PureComponent {
         }
       >
         {icon}
-        <span>{name}</span>
+        <span>
+          &nbsp;&nbsp;
+          {name}
+        </span>
       </Link>
     );
   };
@@ -134,7 +129,10 @@ export default class SiderMenu extends PureComponent {
               item.icon ? (
                 <span>
                   {getIcon(item.icon)}
-                  <span>{item.name}</span>
+                  <span>
+                    &nbsp;&nbsp;
+                    {item.name}
+                  </span>
                 </span>
               ) : (
                 item.name
@@ -171,7 +169,7 @@ export default class SiderMenu extends PureComponent {
   };
 
   // Get the currently selected menu
-  getSelectedMenuKeys = (menuKeys) => {
+  getSelectedMenuKeys = menuKeys => {
     const {
       location: { pathname },
     } = this.props;
@@ -201,8 +199,6 @@ export default class SiderMenu extends PureComponent {
 
   isMainMenu = key => {
     const { menuData } = this.props;
-    console.log("isMainMenu");
-    console.log(menuData);
     return menuData.some(item => key && (item.key === key || item.path === key));
   };
 
@@ -218,10 +214,16 @@ export default class SiderMenu extends PureComponent {
   render() {
     const { logo, menuData, collapsed, onCollapse, openKeys } = this.props;
     // Don't show popup menu when it is been collapsed
+    const { openKeys: k } = this.state;
+
+    if (menuData.length === 0) {
+      return <div>waiting...</div>;
+    }
+
     const menuProps = collapsed
       ? {}
       : {
-        openKeys,
+          openKeys,
         };
     // if pathname can't match, use the nearest parent's key
     const menuKeys = getFlatMenuKeys(menuData);
@@ -252,7 +254,7 @@ export default class SiderMenu extends PureComponent {
           theme="dark"
           mode="inline"
           {...menuProps}
-          openKeys={this.state.openKeys}
+          openKeys={k}
           onOpenChange={this.handleOpenChange}
           selectedKeys={selectedKeys}
           style={{ padding: '16px 0', width: '100%' }}

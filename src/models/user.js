@@ -6,7 +6,7 @@ export default {
   state: {
     list: [],
     currentUser: {},
-    menuList:[],
+    menuList: [],
   },
 
   effects: {
@@ -21,8 +21,12 @@ export default {
       const response = yield call(queryCurrent);
       yield put({
         type: 'saveCurrentUser',
-        payload: response,
+        payload: {
+          name: response.user.username,
+          userid: response.user.userId,
+        },
       });
+      return response;
     },
     *fetchMenu(_, { call, put }) {
       const response = yield call(queryMenu);
@@ -30,6 +34,7 @@ export default {
         type: 'saveMenu',
         payload: response,
       });
+      return response;
     },
   },
 

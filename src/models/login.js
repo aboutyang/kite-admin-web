@@ -1,4 +1,5 @@
 import { routerRedux } from 'dva/router';
+import { message } from 'antd';
 import { stringify } from 'qs';
 import { fakeAccountLogin } from '../services/api';
 import { setAuthority, setToken, clearToken } from '../utils/authority';
@@ -17,7 +18,10 @@ export default {
       const response = yield call(fakeAccountLogin, payload);
       yield put({
         type: 'changeLoginStatus',
-        payload: response,
+        payload: {
+          ...response,
+          currentAuthority: 'user',
+        },
       });
       // Login successfully
       if (response.code === 0) {
@@ -38,6 +42,8 @@ export default {
           }
         }
         yield put(routerRedux.replace(redirect || '/'));
+      } else {
+        message.error(response.msg);
       }
     },
     *logout(_, { put }) {
